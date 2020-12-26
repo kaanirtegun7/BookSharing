@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block title %}Sign Up{% endblock %}
+
+	
+	
+{% block content %}
+
+<div class="signup-form">
+    <form action="/sign_up" method="post">
+		<h2>Sign Up</h2>
+		<p class="hint-text">Please enter your information to register.</p>
+        
+        <div class="form-group">
+        	<input type="text" class="form-control" name="fullname" placeholder="fullname" required="required">
+        </div>
+
+        <div class="form-group">
+        	<input type="text" class="form-control" name="username" placeholder="username" required="required">
+        </div>
+
+
+ 
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="email" required="required" placeholder="itü mail" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <span class="input-group-text" id="basic-addon2">@itu.edu.tr</span>
+        </div>
+		
+		<div class="form-group">
+            <input type="password" class="form-control" name="password" placeholder="Password" required="required">
+        </div> 
+		<div class="form-group">
+            <button type="submit" class="btn btn-success btn-lg btn-block">Register</button>
+        </div>
+    </form>
+    <div class="text-center text-primary">Do you already have an account  <a style="text-decoration: none;"class="btn btn-primary" href="/sign_in">   Sign In</a></div>
+</div>
+
+<footer class="py-3 bg-dark text-white text-center fixed-bottom">
+    Copyright © 2020 <br>
+    Designed by Mert Kaan İrtegün
+</footer>
+{% endblock %}
+
+
+    
+    
+
+	

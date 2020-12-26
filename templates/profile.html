@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block title %}Profile{% endblock %}
+
+	
+	
+{% block content %}
+
+<div class="signup-form">
+    <form action="/profile" method="post">
+		<h2>Profile</h2>
+		<p class="hint-text">Your profile information.</p>
+        
+        <div class="form-group">
+            <h4>Fullname: {{datas.1}}</h4>
+        </div>
+
+        <div class="form-group">
+            <h4>Username: {{datas.2}}</h4>
+        </div>
+
+        <div class="form-group">
+            <h4>Email: {{datas.3}}</h4>
+        </div>
+		
+		<div class="form-group">
+            <a href="/edit/{{datas.0}}" style="text-decoration: none;" class="text-white btn btn-danger btn-md btn-block">Edit</a>
+            <a  href="/delete/{{datas.0}}" style="text-decoration: none;" class="text-white btn btn-success btn-md btn-block">Delete</a>
+        </div>
+    </form>
+</div>
+
+<footer class="py-3 bg-dark text-white text-center fixed-bottom">
+    Copyright © 2020 <br>
+    Designed by Mert Kaan İrtegün
+</footer>
+{% endblock %}
+
+
+    
+    
+
+	
