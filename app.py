@@ -7,14 +7,14 @@ app = Flask(__name__)
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '12300321mk'
+app.config['MYSQL_PASSWORD'] = '*'
 app.config['MYSQL_DB'] = 'newdb'
 mysql= MySQL(app)
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'noreply.booksharingplatform@gmail.com'
-app.config['MAIL_PASSWORD'] = '12300321mk'
+app.config['MAIL_PASSWORD'] = '*'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
