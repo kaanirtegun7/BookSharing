@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %} Comment {% endblock  %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+            <img src="../static/img/{{products.3}}" class="card-img-top img-thumbnail" alt="">
+                <div class="card-body">
+                    <h4 class="card-title">{{products.1}}</h4>
+                    <p > {{productdetails.2}} </p>
+                    <p style="float: right;"> {{products.2}} <i class="fas fa-dollar-sign"></i></p>
+                </div>
+                <div class="card-footer text-muted">
+                    {{productdetails.1}}  <p class="" style="float: right;"> {{user.2}} </p>  
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="d-flex flex-column comment-section" id="myGroup">
+                {% for item in comment %}
+                    {% if session['id'] == item.3 %}
+                        <div class="bg-white p-2">
+                            <div style="float: right;" class="">
+                                <div class="d-flex flex-row user-info"><img class="rounded-circle" src="../static/img/user.png" width="40">
+                                    <div class="d-flex flex-column justify-content-start ml-2">
+                                        <span class="d-block font-weight-bold name">
+                                            {% for username in users %}
+                                                {% if username.0 == item.3 %}
+                                                    {{username.2}}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        <span class="date text-black-50">{{item.2}}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="comment-text"> {{item.1}} </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="bg-white p-2">
+                            <div class="d-flex flex-row user-info"><img class="rounded-circle" src="../static/img/user.png" width="40">
+                                <div class="d-flex flex-column justify-content-start ml-2">
+                                    <span class="d-block font-weight-bold name">
+                                        {% for username in users %}
+                                            {% if username.0 == item.3 %}
+                                                {{username.2}}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                    <span class="date text-black-50">{{item.2}}</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <p class="comment-text"> {{item.1}} </p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    
+                {% endfor %}
+
+                
+
+
+
+
+
+
+                <div class="bg-white p-2">
+                    <div class="d-flex flex-row fs-12 ">
+                        <div class="like p-2 cursor action-collapse ml-auto "  data-toggle="collapse" aria-expanded="true" aria-controls="collapse-1" href="#collapse-1"><i class="fa fa-commenting-o"></i><span class="ml-1">Add Comment</span></div>
+                    </div>
+                </div>
+                <div id="collapse-1" class="bg-light p-2 collapse" data-parent="#myGroup">
+                    <div class="d-flex flex-row align-items-start"><img class="rounded-circle" src="../static/img/user.png" width="40">
+                        <form action="/addComment/{{products.0}} " method="post" style="width:480px;">
+                            <div class="form-group">
+                                <textarea class="form-control ml-1 shadow-none textarea" name="comment" placeholder="Write comment..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <div class="mt-2 text-right">
+                                    <button class="btn btn-secondary btn-sm shadow-none" type="submit">Post comment</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock  %}

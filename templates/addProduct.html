@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block title %}Add Product{% endblock %}
+
+	
+	
+{% block content %}
+
+<div class="signup-form">
+    <form action="/addProduct" enctype="multipart/form-data" method="post">
+		<h2>Add Product</h2>
+		<p class="hint-text">Please enter your product information.</p>
+        
+        <div class="form-group">
+        	<input type="text" class="form-control" name="ProductName" placeholder="Product Name" required="required">
+        </div>
+
+        <div class="input-group mb-3">
+        	<input type="text" class="form-control" name="ProductPrice" placeholder="Product Price" required="required">
+            <span class="input-group-text" id="basic-addon2">$</span>
+        </div>
+        <div class="form-group">
+            <label for="exampleFormControlSelect2">Please choose category</label>
+            <select multiple class="form-control" name="mCategory" id="mCategory">
+                {% for item in category %}
+                    <option> {{item.1}} </option>
+                {% endfor %}
+                    <option> Other </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" name="ProductDescription" placeholder="Product Description" required="required" id="exampleFormControlTextarea1" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">    
+            <div class="custom-file">
+                <input type="file" name="file" class="custom-file-input form-control" id="inputGroupFile01">
+                <label class="custom-file-label" for="inputGroupFile01">Product Image</label>
+            </div>
+        </div>
+
+
+ 
+
+        
+		
+		
+		<div class="form-group">
+            <button type="submit" class="btn btn-success btn-lg btn-block">Add Product</button>
+        </div>
+    </form>
+</div>
+
+<footer class="py-3 bg-dark text-white text-center fixed-bottom">
+    Copyright © 2020 <br>
+    Designed by Mert Kaan İrtegün
+</footer>
+{% endblock %}
+
+
+    
+    
+
+	

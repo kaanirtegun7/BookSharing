@@ -1,9 +1,17 @@
 from flask import Flask, render_template, url_for, request, redirect, flash,session
 from flask_mysqldb import MySQL,MySQLdb
 import bcrypt
+from datetime import datetime
 from flask_mail import Mail, Message
 import random 
+import os
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = r'./static/img'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
@@ -23,6 +31,7 @@ value = "global"
 
 app.secret_key='booksharing'
 
+
 @app.route('/')
 def index():
     if 'username' in session:
@@ -33,7 +42,24 @@ def index():
 @app.route('/home')
 def home():
     if 'username' in session:
-        return render_template("home.html")
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM product ORDER BY idproduct DESC limit 3")
+        products = cur.fetchall()
+        flag = "false"
+        user = []
+        productdetails = []
+        for item in products:
+            cur.execute("SELECT * FROM productdetails where product_idproduct=%s",(item[0],))
+            productdetails.append(cur.fetchone())
+            cur.execute("SELECT * FROM user where iduser=%s",(item[5],))
+            users = cur.fetchone()
+            for userid in user:
+                if users == userid:
+                    flag="true"
+            if flag == "false":
+                user.append(users)
+            flag="false"
+        return render_template("home.html",products=products,productdetails=productdetails,user=user)
     else:
         return render_template("index.html")
 
@@ -96,6 +122,7 @@ def sign_in():
         if  user:
             if bcrypt.hashpw(password,user['password'].encode('utf-8')) == user['password'].encode('utf-8'):
                 session['username'] = user['username']
+                session['id'] = user['iduser']
                 flash('You were successfully logged in',"success")
                 return redirect(url_for('home'))
             else:
@@ -161,7 +188,153 @@ def update_account(id):
 
 @app.route('/product',methods=['GET','POST'])
 def product():
-    return render_template("product.html")
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM category")
+    category = cur.fetchall()
+    cur.execute("SELECT * FROM product")
+    products = cur.fetchall()
+    username=[]
+    flag = "false"
+    for item in products:
+        userid = item[5]
+        cur.execute("SELECT * FROM user WHERE iduser=%s",(userid,))
+        user = cur.fetchone()
+        if username:
+            for ctrl in username:
+                if user == ctrl:
+                    flag = "true"
+        if flag == "false":
+            username.append(user)
+        flag = "false"
+    cur.execute("SELECT * FROM productdetails")
+    productdetails = cur.fetchall()
+    return render_template("product.html",category=category,products=products,productdetails=productdetails,user=username)
+
+@app.route('/product/<id>',methods=['GET','POST'])   #category section
+def products(id):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM category")
+    category = cur.fetchall()
+    
+    cur.execute("SELECT * FROM product_has_category WHERE category_idcategory=%s",(id))
+    idproducts = cur.fetchall()
+    products=[]
+    productdetails=[]
+    for item in idproducts:
+        cur.execute("SELECT * FROM product Where idproduct=%s",(item[0],))
+        products.append(cur.fetchone())
+        cur.execute("SELECT * FROM productdetails Where product_idproduct=%s",(item[0],))
+        productdetails.append(cur.fetchone())
+    
+    username=[]
+    flag = "false"
+    for item in products:
+        userid = item[5]
+        cur.execute("SELECT * FROM user WHERE iduser=%s",(userid,))
+        user = cur.fetchone()
+        if username:
+            for ctrl in username:
+                if user == ctrl:
+                    flag = "true"
+        if flag == "false":
+            username.append(user)
+        flag = "false"
+
+    return render_template("product.html",category=category,products=products,productdetails=productdetails,user=username)
+
+@app.route('/category/<id>',methods=['GET','POST'])
+def category():
+    cur=mysql.connection.cursor()
+    cur.execute('SELECT *FROM user WHERE iduser=%s',(id))
+    data = cur.fetchall()
+    return "8"
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/addProduct',methods=['GET','POST'])
+def addProduct():
+    if request.method == 'GET':
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM category")
+        category = cur.fetchall()
+        return render_template("addProduct.html",category=category)
+    else:
+        now = datetime.now()
+        formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+        productName = request.form['ProductName']
+        productPrice = request.form['ProductPrice']
+        productCategory = request.form.getlist('mCategory')
+        productDescription = request.form['ProductDescription']
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename1 = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename1))
+            username = session['username']
+            cur=mysql.connection.cursor()
+            cur.execute("SELECT * FROM user WHERE username=%s",(username,))
+            data = cur.fetchone()
+            iduser = data[0]
+
+            cur.execute('INSERT INTO product (name,price,image,status,user_iduser) VALUES(%s,%s,%s,%s,%s)',
+            (productName,productPrice,filename1,"open",iduser))
+            mysql.connection.commit()
+
+            cur.execute("SELECT * FROM product  WHERE user_iduser=%s ORDER BY idproduct DESC limit 1",(iduser,))
+            data1 = cur.fetchone()
+            idproduct = data1[0]
+
+            cur.execute('INSERT INTO productdetails (date,description,product_idproduct) VALUES(%s,%s,%s)',
+            (formatted_date,productDescription,idproduct))
+            mysql.connection.commit()
+
+            for item in productCategory:
+                cur.execute("SELECT * FROM category WHERE name=%s",(item,))
+                category = cur.fetchone()
+                idcategory = category[0]
+                cur.execute('INSERT INTO product_has_category (product_idproduct,category_idcategory) VALUES(%s,%s)',
+                (idproduct,idcategory))
+                mysql.connection.commit()
+            return redirect(url_for('product'))
+        return "Error"
+
+@app.route('/comment/<id>',methods=['GET','POST'])
+def comment(id):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM product WHERE idproduct=%s",(id))
+    product = cur.fetchone()
+    cur.execute("SELECT * FROM user WHERE iduser=%s",(product[5],))
+    user = cur.fetchone()
+    cur.execute("SELECT * FROM productdetails WHERE product_idproduct=%s",(id))
+    productdetails = cur.fetchone()
+    cur.execute("SELECT * FROM comment WHERE product_idproduct=%s",(id))
+    comment = cur.fetchall()
+    cur.execute("SELECT * FROM user")
+    users = cur.fetchall()
+    return render_template('comment.html',products=product,productdetails=productdetails,user=user,comment=comment,users=users)
+@app.route('/addComment/<id>',methods=['GET','POST'])
+def addComment(id):
+    if request.method == 'POST':
+        now = datetime.now()
+        formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+        cur = mysql.connection.cursor()
+        comment = request.form['comment']
+        cur.execute("SELECT * FROM product WHERE idproduct=%s",(id))
+        product = cur.fetchone()
+        productparameter=product[0]
+        username=session['username']
+        cur.execute("SELECT * FROM user WHERE username=%s",(username,))
+        user = cur.fetchone()
+        cur.execute("SELECT * FROM productdetails WHERE product_idproduct=%s",(id))
+        productdetails = cur.fetchone()
+        cur.execute("SELECT * FROM user WHERE iduser=%s",(product[5],))
+        user1 = cur.fetchone()
+        cur.execute('INSERT INTO comment (commentext,date,user_iduser,product_idproduct) VALUES(%s,%s,%s,%s)',
+        (comment,formatted_date,user[0],product[0]))
+        mysql.connection.commit()
+        return redirect(url_for('comment',id=productparameter))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,84 +1,95 @@
 {% extends "layout.html" %}
 
-{% block title %} Home {% endblock  %}
+{% block title %} Product {% endblock  %}
 
 {% block content %}
 
 
-{% include 'category.html' %}
 
+<div class="container mt-5">
+    <nav class="navbar bg-dark navbar-expand-sm navbar-dark ">
+        <a href="#" class="navbar-brand">
+            <i class="fas fa-align-justify"></i>&nbsp;Categories
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div id="navbarCollapse" class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-5">
+                    <li class="nav-item">
+                        <a href="/product" class="nav-link active">
+                            All Product
+                        </a>
+                    </li>
+                {% for item in category %}
+                    <li class="nav-item">
+                        <a href="/product/{{item.0}}" class="nav-link active">
+                            {{item.1}}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a href="/addProduct" class="nav-link active"><i class="fas fa-plus"></i>
+                        Add Product
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</div>
+
+{% if products %}
 
 
 <div class="container mt-5">
     <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img src="img/slider-1.jpeg" class="card-img-top img-thumbnail" alt="">
-                <div class="card-body">
-                    <h4 class="card-title">Post Title</h4>
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corrupti explicabo asperiores
-                        quae provident veritatis molestias laborum incidunt nemo laboriosam numquam.
-                    </p>
-                    <button type="button" class="btn btn-secondary">Read More</button>
+        
+            {% for item in products %}
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <img src="../static/img/{{item.3}}" class="card-img-top img-thumbnail" alt="">
+                        <div class="card-body">
+                            <h4 class="card-title">{{item.1}}</h4>
+                            <div style="max-heigh: 10px;" class="">
+                                <p class="card-text">
+                                    {% for details in productdetails %}
+                                        {% if details.3 == item.0 %}
+                                            {{details.2}}
+                                        {% endif %}
+                                    {% endfor %}
+                                </p>
+                            </div>
+                            
+                            {% for details in productdetails %}
+                                    {% if details.3 == item.0 %}
+                                        <a href="/comment/{{item.0}}" class="btn btn-secondary" >Read More</a>
+                                        <p style="float: right;"> {{item.2}} <i class="fas fa-dollar-sign"></i></p>
+                                    {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% for details in productdetails %}
+                            {% if details.3 == item.0 %}
+                                <div class="card-footer text-muted">
+                                    {{details.1}}  <p class="" style="float: right;"> 
+                                    {% for username in user %}
+                                        {% if item.5 == username.0 %}
+                                            {{username.2}}
+                                        {% endif %}
+                                    {% endfor %} 
+                                    </p>        
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                    </div>
                 </div>
-                <div class="card-footer text-muted">
-                    Posted on January 1, 2019
-                </div>
-            </div>
-            
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img src="img/slider-1.jpeg" class="card-img-top img-thumbnail" alt="">
-                <div class="card-body">
-                    <h4 class="card-title">Post Title</h4>
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corrupti explicabo asperiores
-                        quae provident veritatis molestias laborum incidunt nemo laboriosam numquam.
-                    </p>
-                    <button type="button" class="btn btn-secondary">Read More</button>
-                </div>
-                <div class="card-footer text-muted">
-                    Posted on January 1, 2019
-                </div>
-            </div>
-            
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img src="img/slider-1.jpeg" class="card-img-top img-thumbnail" alt="">
-                <div class="card-body">
-                    <h4 class="card-title">Post Title</h4>
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corrupti explicabo asperiores
-                        quae provident veritatis molestias laborum incidunt nemo laboriosam numquam.
-                    </p>
-                    <button type="button" class="btn btn-secondary">Read More</button>
-                </div>
-                <div class="card-footer text-muted">
-                    Posted on January 1, 2019
-                </div>
-            </div>
-            
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img src="img/slider-1.jpeg" class="card-img-top img-thumbnail" alt="">
-                <div class="card-body">
-                    <h4 class="card-title">Post Title</h4>
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corrupti explicabo asperiores
-                        quae provident veritatis molestias laborum incidunt nemo laboriosam numquam.
-                    </p>
-                    <button type="button" class="btn btn-secondary">Read More</button>
-                </div>
-                <div class="card-footer text-muted">
-                    Posted on January 1, 2019
-                </div>
-            </div>
-            
-        </div>
+            {% endfor %}
+           
     </div>
 </div>
+{% else %}
+{% endif %}
 {% endblock  %}
