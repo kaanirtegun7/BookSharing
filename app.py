@@ -7,6 +7,8 @@ import random
 import os
 from werkzeug.utils import secure_filename
 
+# client = vimeo.Client(key=YOUR_CONSUMER_KEY, secret=pHUQDGdNmCuuc3rc3/kNLwUwpS0sKTnFtJ/Koj7oUBkEwVzn9nEthf8HF4gr166536A3jHmdH5TzOrjSUaPjilD4BrKV2BiMfjoeQZ4/7T1V3DiyM87a/bg8lpoLRUzy, callback=YOUR_CALLBACK_URL)
+
 UPLOAD_FOLDER = r'./static/img'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
@@ -15,14 +17,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '*'
+app.config['MYSQL_PASSWORD'] = '12300321mk'
 app.config['MYSQL_DB'] = 'newdb'
 mysql= MySQL(app)
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'noreply.booksharingplatform@gmail.com'
-app.config['MAIL_PASSWORD'] = '*'
+app.config['MAIL_PASSWORD'] = '12300321mk'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
@@ -35,14 +37,19 @@ app.secret_key='booksharing'
 @app.route('/')
 def index():
     if 'username' in session:
-        return render_template("home.html")
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM category")
+        category = cur.fetchall()
+        return render_template("home.html",category=category)
     else:
-        return render_template("index.html")
+        return redirect(url_for('home'))
 
 @app.route('/home')
 def home():
     if 'username' in session:
         cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM category")
+        category = cur.fetchall()
         cur.execute("SELECT * FROM product ORDER BY idproduct DESC limit 3")
         products = cur.fetchall()
         flag = "false"
@@ -59,7 +66,7 @@ def home():
             if flag == "false":
                 user.append(users)
             flag="false"
-        return render_template("home.html",products=products,productdetails=productdetails,user=user)
+        return render_template("home.html",products=products,productdetails=productdetails,user=user,category=category)
     else:
         return render_template("index.html")
 
@@ -86,16 +93,19 @@ def sign_up():
         return redirect(url_for('confirmation'))
 
 @app.route('/confirmation',methods=['GET','POST'])
-def confirmation():
+def confirmation(): 
     if request.method == 'GET':
         return render_template('confirmation.html')
     else:
         user = session['user']
+        isadmin = 0
+        if user[1] == "kaan":
+            isadmin = 1
         code = request.form['code']
         if  str(value) == str(code):
             cur = mysql.connection.cursor()
-            cur.execute('INSERT INTO user (fullname,username,email,password) VALUES(%s,%s,%s,%s)',
-            (user[0],user[1],user[2],user[3]))
+            cur.execute('INSERT INTO user (fullname,username,email,password,isadmin) VALUES(%s,%s,%s,%s,%s)',
+            (user[0],user[1],user[2],user[3],isadmin))
             mysql.connection.commit()
             flash('You were successfully registered',"success")
             session.clear()
@@ -123,6 +133,7 @@ def sign_in():
             if bcrypt.hashpw(password,user['password'].encode('utf-8')) == user['password'].encode('utf-8'):
                 session['username'] = user['username']
                 session['id'] = user['iduser']
+                session['isadmin'] = user['isadmin']
                 flash('You were successfully logged in',"success")
                 return redirect(url_for('home'))
             else:
@@ -151,6 +162,19 @@ def profile():
 @app.route('/delete/<string:id>')
 def delete(id):
     cur=mysql.connection.cursor()
+    cur.execute("DELETE FROM comment WHERE user_iduser={0}".format(id))
+    cur.execute("DELETE FROM request WHERE user_iduser={0}".format(id))
+    mysql.connection.commit()
+    cur.execute("SELECT *FROM product WHERE user_iduser={0}".format(id))
+    product = cur.fetchall()
+    for item in product:
+        cur.execute("DELETE FROM comment WHERE product_idproduct=%s",(item[0],))
+        cur.execute("DELETE FROM product_has_category WHERE product_idproduct=%s",(item[0],))
+        mysql.connection.commit()
+        cur.execute("DELETE FROM productdetails WHERE product_idproduct=%s",(item[0],))
+        mysql.connection.commit()
+        cur.execute("DELETE FROM product WHERE idproduct=%s",(item[0],))
+        mysql.connection.commit()
     cur.execute('DELETE FROM user WHERE iduser={0}'.format(id))
     mysql.connection.commit()
     session.clear()
@@ -216,7 +240,7 @@ def products(id):
     cur.execute("SELECT * FROM category")
     category = cur.fetchall()
     
-    cur.execute("SELECT * FROM product_has_category WHERE category_idcategory=%s",(id))
+    cur.execute("SELECT * FROM product_has_category WHERE category_idcategory=%s",(id,))
     idproducts = cur.fetchall()
     products=[]
     productdetails=[]
@@ -302,17 +326,18 @@ def addProduct():
 @app.route('/comment/<id>',methods=['GET','POST'])
 def comment(id):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM product WHERE idproduct=%s",(id))
+    cur.execute("SELECT * FROM product WHERE idproduct=%s",(id,))
     product = cur.fetchone()
     cur.execute("SELECT * FROM user WHERE iduser=%s",(product[5],))
     user = cur.fetchone()
-    cur.execute("SELECT * FROM productdetails WHERE product_idproduct=%s",(id))
+    cur.execute("SELECT * FROM productdetails WHERE product_idproduct=%s",(id,))
     productdetails = cur.fetchone()
-    cur.execute("SELECT * FROM comment WHERE product_idproduct=%s",(id))
+    cur.execute("SELECT * FROM comment WHERE product_idproduct=%s",(id,))
     comment = cur.fetchall()
     cur.execute("SELECT * FROM user")
     users = cur.fetchall()
     return render_template('comment.html',products=product,productdetails=productdetails,user=user,comment=comment,users=users)
+
 @app.route('/addComment/<id>',methods=['GET','POST'])
 def addComment(id):
     if request.method == 'POST':
@@ -335,6 +360,39 @@ def addComment(id):
         mysql.connection.commit()
         return redirect(url_for('comment',id=productparameter))
 
+@app.route('/request',methods=['GET','POST'])
+def requ():
+    if request.method == 'GET':
+        return render_template("request.html")
+    else:
+        cur = mysql.connection.cursor()
+        comment = request.form['request']
+        username=session['username']
+        cur.execute("SELECT * FROM user WHERE username=%s",(username,))
+        user = cur.fetchone()
+        cur.execute('INSERT INTO request (messagetext,user_iduser) VALUES(%s,%s)',
+        (comment,user[0]))
+        mysql.connection.commit()
+        return redirect(url_for('home'))
+
+@app.route('/requestList',methods=['GET','POST'])
+def requestList():
+    print("selam")
+    arr=[]
+    packet=[]
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM request  ")
+    req = cur.fetchall()
+    for item in req:
+        cur.execute("SELECT * FROM user WHERE iduser=%s",(item[2],))
+        user = cur.fetchone()
+        packet.append(item)
+        packet[0] = packet[0] + user
+        arr.append(packet)
+        packet=[]
+    for item in arr:
+        print(item[0])
+    return render_template('requestList.html',arr=arr)
 
 if __name__ == "__main__":
     app.run(debug=True)
