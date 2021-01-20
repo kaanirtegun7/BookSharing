@@ -64,37 +64,49 @@
                         <div class="row">
                             <div class="col">
                                 <ul class="list-unstyled">
-                                    <li><a href="#">Web Design</a></li>
-                                    <li><a href="#">Html</a></li>
-                                    <li><a href="#">Angular</a></li>
+                                    <li><a href="/product/{{category[0].0}}">{{category[0].1}}</a></li>
+                                    <li><a href="/product/{{category[1].0}}">{{category[1].1}}</a></li>
+                                    <li><a href="/product/{{category[2].0}}">{{category[2].1}}</a></li>
                                 </ul>
                             </div>
                             <div class="col">
                                 <ul class="list-unstyled">
-                                    <li><a href="#">Javascript</a></li>
-                                    <li><a href="#">Css</a></li>
-                                    <li><a href="#">React</a></li>
+                                    <li><a href="/product/{{category[3].0}}">{{category[3].1}}</a></li>
+                                    <li><a href="/product/{{category[4].0}}">{{category[5].1}}</a></li>
+                                    <li><a href="/product/{{category[5].0}}">{{category[4].1}}</a></li>
                                 </ul>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5>Widget</h5>
+                        <h5>Suggestions and Complaints</h5>
                     </div>
                     <div class="card-body">
+                            {% if session['username'] == 'kaan' %}
                         <p>
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus libero necessitatibus
-                            odit ipsum vitae consequatur.
+                            You can view all incoming requests.
                         </p>
+                                <a href="/requestList" class="btn btn-secondary" >List Request</a>
+                            {% else %}
+                        <p>
+                            You can send your suggestions and complaints about the site here.
+                        </p>
+                                <a href="/request" class="btn btn-secondary" >Add Request</a>
+                            {% endif %}
                     </div>
                 </div>
             </div>
             
         </div>
+    </div>
+    <div>
+          
+
+
+    
     </div>
 </main>
 <footer class="py-3 bg-dark text-white text-center ">

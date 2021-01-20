@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %} Request List {% endblock  %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-8"> 
+            <div class="d-flex flex-column comment-section" id="myGroup">
+                        {% for item in arr %}
+                        <div class="bg-white p-2">
+                            <div class="d-flex flex-row user-info"><img class="rounded-circle" src="../static/img/user.png" width="40">
+                                <div class="d-flex flex-column justify-content-start ml-2">
+                                    <span class="d-block font-weight-bold name">{{item[0].4}}
+                                    </span>
+                                    <span class="date text-black-50">{{item[0].5}}</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <p class="comment-text">{{item[0].1}}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+            </div>
+
+
+        </div>
+        <div class="col-md-2">
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+{% endblock  %}
